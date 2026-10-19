@@ -1,20 +1,18 @@
 import { readFile } from "node:fs/promises";
 import type { Context } from "hono";
 import { streamText } from "hono/streaming";
-import { call_llm } from "./llm.ts";
+import { call_llm_json, call_llm } from "./llm.ts";
+import { setup_form_tool } from "./tools/setup_form.ts"
 
-const model_instructions = await readFile(new URL("./instructions.txt", import.meta.url), "utf8");
+const model_instructions = await readFile(new URL("../instructions/setup_instructions", import.meta.url), "utf8");
 
-// POST /chat  body: { "prompt": "..." }  → streams the model's reply as plain text.
-export async function chat(c: Context) {
+
+export async function initiate_new_setup(c: Context) {
   const { prompt } = await c.req.json<{ prompt: string }>();
-  return streamText(c, async (stream) => {
-    for await (const token of call_llm(model_instructions, prompt)) {
-      await stream.write(token);
-    }
-  });
-}
-
-export async function initiate_new_setup(c: Context){
-  
+  try {
+    const setup = await call_llm_json(model_instructions, prompt, setup_form_tool);
+    return c.json(setup);
+  } catch (e) {
+    return c.json({ error: (e as Error).message }, 502);
+  }
 }
