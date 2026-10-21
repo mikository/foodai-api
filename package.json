@@ -9,8 +9,8 @@
     "hono": "^4.13.13"
   },
   "scripts": {
-    "start": "node server.ts",
-    "dev": "node --watch server.ts",
+    "start": "node --env-file-if-exists=.env server.ts",
+    "dev": "node --env-file-if-exists=.env --watch server.ts",
     "typecheck": "tsc --noEmit"
   }
 }
