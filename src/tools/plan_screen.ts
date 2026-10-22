@@ -230,13 +230,22 @@ export const plan_screen_tool: Tool = {
   }),
 };
 
-// Turns the tool's arguments into the shape the app expects (mobile/src/types/plan.ts).
-// Providers that don't enforce the schema can send block types the app doesn't know; those are dropped.
+// Turns one block from the tool's arguments into the shape the app expects (mobile/src/types/plan.ts).
+// Providers that don't enforce the schema can send block types the app doesn't know; those become null.
+// `index` counts kept blocks only, so ids are the same whether the plan is streamed or not.
 type Block = { type: string; [key: string]: unknown };
 
+export function to_plan_block(block: unknown, index: number) {
+  const type = (block as Partial<Block>)?.type ?? "";
+  return BLOCK_TYPES.includes(type) ? { ...(block as Block), id: `${type}_${index}` } : null;
+}
+
+// The same for the whole plan.
 export function to_plan_response(args: Record<string, unknown>) {
-  const blocks = (Array.isArray(args.blocks) ? args.blocks : [])
-    .filter((b): b is Block => BLOCK_TYPES.includes((b as Partial<Block>)?.type ?? ""))
-    .map((b, i) => ({ ...b, id: `${b.type}_${i}` }));
+  const blocks: Block[] = [];
+  for (const raw of Array.isArray(args.blocks) ? args.blocks : []) {
+    const block = to_plan_block(raw, blocks.length);
+    if (block) blocks.push(block);
+  }
   return { ...args, blocks };
 }
