@@ -35,4 +35,6 @@ Header
 
 Writing
 - Short. Dish names as a menu would write them. Badges 1–3 words. Notes 1–2 sentences.
+- Checklist: the item name in label and the amount in quantity ("Onions", "4"), never both in label.
+- Allergy matrix: one column per dish, headed by that dish's emoji from item_rows.
 - Plain words, no markdown, no emoji except the emoji fields.

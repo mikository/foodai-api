@@ -178,7 +178,7 @@ const block_types: Record<string, { description: string; properties: Record<stri
   allergy_matrix: {
     description: "Which dishes are safe for which person; use whenever someone has an allergy or restriction",
     properties: {
-      dishes: list(string("Column header: one emoji or 1 word"), 1, 6),
+      dishes: list(string("Column header: the dish's emoji"), 1, 6),
       people: list(
         object({
           person: string("Name · restriction, e.g. Leo · dairy"),
