@@ -142,16 +142,19 @@ const FIELD_KEYS = [
   "multiple", "min", "max", "step", "default", "unit", "low_label", "high_label",
 ];
 
-// Turns the tool's arguments into the shape the app expects (mobile/src/types/setup.ts).
-// The schema can't express unique ids, so repeats get a numeric suffix.
+// Turns one field from the tool's arguments into the shape the app expects (mobile/src/types/setup.ts).
+// The schema can't express unique ids, so repeats (tracked in `seen`) get a numeric suffix.
+export function to_field(field: Record<string, unknown>, seen: Set<string>) {
+  let id = String(field.id);
+  for (let n = 2; seen.has(id); n++) id = `${field.id}_${n}`;
+  seen.add(id);
+  const filled = Object.fromEntries(FIELD_KEYS.map((key) => [key, field[key] ?? null]));
+  return { ...filled, id, required: field.type === "toggle" ? false : field.required };
+}
+
+// The same for the whole form.
 export function to_setup_response(args: Record<string, unknown>) {
   const seen = new Set<string>();
-  const fields = (args.fields as Record<string, unknown>[]).map((field) => {
-    let id = String(field.id);
-    for (let n = 2; seen.has(id); n++) id = `${field.id}_${n}`;
-    seen.add(id);
-    const filled = Object.fromEntries(FIELD_KEYS.map((key) => [key, field[key] ?? null]));
-    return { ...filled, id, required: field.type === "toggle" ? false : field.required };
-  });
+  const fields = (args.fields as Record<string, unknown>[]).map((field) => to_field(field, seen));
   return { intent: args.intent, message: args.message, fields };
 }
